@@ -1,4 +1,4 @@
-1. For more information about how the folders are structured, check the README files in /include and /lib
+1. main.cpp in /src. For more information about how the folders are structured, check the README files in /include and /lib
 2. To see what board this folder of code supports, see platformio.init. For this board it's Teensy 4.1 with the Arduino framework.
 3. The following commands can be used for compiling and uploading code. Make sure you open a New Terminal from the PlatformIO menu, not the terminal from VScode. Download instructions: https://platformio.org/install/ide?install=vscode
     - pio run: compile code
