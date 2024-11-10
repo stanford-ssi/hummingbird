@@ -78,6 +78,13 @@ void loop() {
     Serial.println(temp);
     */
 
+    /*
+    // RFM95W LoRa Radio is included in seperate scripts:
+    900MHz_TX_Test.cpp
+    900MHz_RX_Test.cpp
+    */
+    
+
     delay(50);    // delay 50ms
 
 }
