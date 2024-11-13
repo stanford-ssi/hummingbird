@@ -21,7 +21,7 @@
 #define LOAD_IN_1 A10
 #define LOAD_IN_2 A11
 
-    char buffer[50];
+char buffer[50];
 // digital inputs via I2C: BME680 (can read temp, pressure, humidity, gas)
 // Note from Sam: I was too lazy (and don't have time) to configure the I2C setup from the ground up.
 // It can be done, but will need someone with substantial serial communication knowledge and lots of time on their hands.
@@ -51,7 +51,7 @@ void setup() {
     // begin I2C object. See Adafruit.BME680.h for interface details
     bme.begin();
 }
-int count = 0;
+
 // the loop function runs over and over again forever
 void loop() {
     // uncomment each section when ready to test
@@ -90,10 +90,9 @@ void loop() {
     float temp = bme.readTemperature();
     Serial.print("Temp: ");
     Serial.println(temp);
-    snprintf(buffer, sizeof(buffer), "The value of heat is: %.2f", temp);
+    snprintf(buffer, sizeof(buffer), "The value of heat is: %.2f\n", temp);
     myFile.write(buffer);
     
-    count++;
 
     /*
     // RFM95W LoRa Radio is included in seperate scripts:
@@ -103,8 +102,9 @@ void loop() {
     
 
     delay(50);    // delay 50ms
-    if( count > 5) {
+    myFile.flush();
+    // if( count  5) {
 
-        myFile.close();
-    }
+    //     myFile.close();
+    // }
 }
