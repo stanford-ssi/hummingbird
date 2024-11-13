@@ -1,0 +1,3 @@
+[submodule "teensy_software/lib/teensy_software/lib/Adafruit_ICM20X"]
+	path = teensy_software/lib/teensy_software/lib/Adafruit_ICM20X
+	url = https://github.com/adafruit/Adafruit_ICM20X.git
