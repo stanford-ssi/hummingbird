@@ -3910,24 +3910,6 @@
 					)
 				)
 			)
-			(pin input line
-				(at -20.32 35.56 0)
-				(length 5.08)
-				(name "VIN"
-					(effects
-						(font
-							(size 1.016 1.016)
-						)
-					)
-				)
-				(number "VIN"
-					(effects
-						(font
-							(size 1.016 1.016)
-						)
-					)
-				)
-			)
 			(pin passive line
 				(at 20.32 43.18 180)
 				(length 5.08)
@@ -3939,6 +3921,26 @@
 					)
 				)
 				(number "VUSB"
+					(effects
+						(font
+							(size 1.016 1.016)
+						)
+					)
+				)
+			)
+		)
+		(symbol "teensy_4.1_1_0"
+			(pin input line
+				(at -20.32 35.56 0)
+				(length 5.08)
+				(name "VDD"
+					(effects
+						(font
+							(size 1.016 1.016)
+						)
+					)
+				)
+				(number "VDD"
 					(effects
 						(font
 							(size 1.016 1.016)
