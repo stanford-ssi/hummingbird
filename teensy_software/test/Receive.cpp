@@ -35,7 +35,11 @@ Receive::Receive(){
     rf95.setTxPower(TRANSMITTER_POWER, false);
 }
 
-void _getMessage(int bufferSize){
+void Receive::_changeFrequency(double freq){
+    RF95_FREQ = freq;
+}
+
+void Receive::_getMessage(int bufferSize){
     const int secondBufferSize = 140;
     uint8_t buf[RH_RF95_MAX_MESSAGE_LEN];
     uint8_t len = sizeof(buf);
