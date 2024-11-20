@@ -19,7 +19,7 @@ The serial monitor allows you to see what the Teensy is outputting, very useful 
 Just follow the gif below to know where these icons are.
 <!-- MANPAGE: BEGIN EXCLUDED SECTION -->
 <div align="center">
-    <img width="500" alt="demo" src="https://raw.githubusercontent.com/stanford-ssi/hummingbird/teensy_software/.github/demo.gif">
+    <img width="500" alt="demo" src="https://github.com/stanford-ssi/hummingbird/tree/TeensySoftware/teensy_software/.github/build.gif">
 </div>
 <!-- MANPAGE: END EXCLUDED SECTION -->
 
