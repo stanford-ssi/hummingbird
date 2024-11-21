@@ -1,8 +1,8 @@
 #include "Arduino.h"
 #include <Adafruit_BME680.h>
-#include <Adafruit_I2CDevice>
+#include <Adafruit_I2CDevice.h>
 #include <Adafruit_Sensor.h>
-#include <Adafruit_HX711>
+#include <Adafruit_HX711.h>
 #include "Wire.h"
 #include <SPI.h>
 #include <RH_RF95.h>
@@ -129,7 +129,7 @@ void loop(){
     /* * * * * Load Cell * * * * */
     int loadIn1 = analogRead(LOAD_IN_1);
     int loadIn2 = analogRead(LOAD_IN_2);
-    int diff = load_in_1 - load_in_2;
+    int diff = LOAD_IN_1 - LOAD_IN_2;
     Serial.println("Load cell outputs: ");
     Serial.println(loadIn1);
     Serial.println(loadIn2);
