@@ -1,3 +1,162 @@
+#include "Arduino.h"
+#include <Adafruit_BME680.h>
+#include <Adafruit_I2CDevice>
+#include <Adafruit_Sensor.h>
+#include <Adafruit_HX711>
+#include "Wire.h"
+#include <SPI.h>
+#include <RH_RF95.h>
+#include <SD.h>
+
+/* * * * * Pin configuration * * * * */
+// Custom pinout for teensy 4.1
+#define RFM95_CS     10  // "B"
+#define RFM95_INT    0 // "C"
+#define RFM95_RST    1  // "A"
+#define RFM95_IRQN   RFM69_INT
+
+// Define the pins for the HX711 communication (load cell)
+const uint8_t DATA_PIN = 18;  // Can use any pins!
+const uint8_t CLOCK_PIN = 19; // Can use any pins!
+
+// Pressure Transducer
+#define PT_INPUT A0
+#define LOAD_IN_1 A10
+#define LOAD_IN_2 A11
+
+// Buffer
+char buffer[50];
+
+/* * * * * I2C Object Initialization * * * * */
+Adafruit_BME680 bme;
+
+/* * * * * SD Card initialization * * * * */
+const int chipSelect = BUILTIN_SDCARD;
+File myFile;
+
+/* * * * * Radio intiialization * * * * */
+#define RF95_FREQ 915.0
+RH_RF95 rf95(RFM95_CS, RFM95_INT);
+
+/* * * * * HX711 Initialization * * * * */
+Adafruit_HX711 hx711(DATA_PIN, CLOCK_PIN);
+
+void setup(){
+    Serial.begin(9600);
+
+    /* * * * * Radio Set-Up * * * * */
+    // Manual reset
+    digitalWrite(RFM95_RST, LOW);
+    delay(10);
+    digitalWrite(RFM95_RST, HIGH);
+    delay(10);
+
+    // Radio init
+    Serial.println("Initializing Radio.");
+    while (!rf95.init()){
+        Serial.println("LoRa radio initialization failed!");
+        Serial.println("Uncomment #define SERIAL_DEBUG in RH_RF95.cpp for detailed debug info.");
+    }
+    Serial.println("LoRa radio initialization complete!");
+
+    // Defaults after init are 434.0MHz, modulation GFSK_Rb250Fd250, +13dbM
+    if (!rf95.setFrequency(RF95_FREQ)) {
+        Serial.println("setFrequency failed");
+    }
+    Serial.print("Set Freq to: "); Serial.println(RF95_FREQ);
+
+    // Note: Defaults after init are 434.0MHz, 13dBm, Bw = 125 kHz, Cr = 4/5, Sf = 128chips/symbol, CRC on
+
+    /* The default transmitter power is 13dBm, using PA_BOOST.
+     * If you are using RFM95/96/97/98 modules which uses the PA_BOOST transmitter pin, then
+     * you can set transmitter powers from 5 to 23 dBm: 
+     */
+    rf95.setTxPower(23, false);
+
+    /* * * * * SD Card Set-Up * * * * */
+    // SD Card init
+    Serial.println("Initializing SD card");
+    while(!SD.begin(chipSelect)){
+        Serial.println("Initialization failed");
+    }
+    Serial.println("SD Card intialization complete!"); 
+
+    // Configure pin i/o
+    pinMode(LED_BUILTIN, OUTPUT);
+    pinMode(PT_INPUT, INPUT);
+    pinMode(LOAD_IN_1, INPUT);
+    pinMode(LOAD_IN_2, INPUT);
+    myFile = SD.open("sensorData.txt", FILE_WRITE);
+
+    /* * * * * I2C Object Set-Up * * * * */
+    bme.begin();
+
+    /* * * * * HX711 Set-Up * * * * */
+    hx711.begin();
+
+    // Honestly don't know what the bottom does.
+    // Just uncomment if needed
+    /* 
+     // read and toss 3 values each
+     Serial.println("Tareing....");
+     for (uint8_t t=0; t<3; t++) {
+        hx711.tareA(hx711.readChannelRaw(CHAN_A_GAIN_128));
+        hx711.tareA(hx711.readChannelRaw(CHAN_A_GAIN_128));
+        hx711.tareB(hx711.readChannelRaw(CHAN_B_GAIN_32));
+        hx711.tareB(hx711.readChannelRaw(CHAN_B_GAIN_32));
+    }
+    */
+}
+
+void loop(){
+    /* Before doing anything, each section will be commented out to make it easier for testing.
+     * These sections will be SD Card reading, Radio Driver, Pressure Transducer, etc.
+     * After you're done testing just comment it back up for other people to use.
+     */
+
+    /* * * * * Testing * * * * */
+    // Sample Blink Program
+    digitalWrite(LED_BUILTIN, HIGH);
+    delay(250);
+    digitalWrite(LED_BUILTIN, LOW);
+    delay(250);
+
+    /* * * *  * Pressure Transducer * * * * */
+    int pt = analogRead(PT_INPUT); // Range: 0 -> 1023 or 10-bit
+    Serial.print("PT Input: ");
+    Serial.println("pt");
+
+    /* * * * * Load Cell * * * * */
+    int loadIn1 = analogRead(LOAD_IN_1);
+    int loadIn2 = analogRead(LOAD_IN_2);
+    int diff = load_in_1 - load_in_2;
+    Serial.println("Load cell outputs: ");
+    Serial.println(loadIn1);
+    Serial.println(loadIn2);
+    Serial.print("Diff: ");
+    Serial.println(diff);
+
+    /* * * * * I2C reading from BME680 * * * * */
+    float temp = bme.readTemperature();
+    Serial.print("Temp: "); 
+    Serial.println(temp);
+    myFile.write(buffer);
+
+    delay(50);
+
+    /* * * * * SD Card * * * * */
+    myFile.flush(); // Write output without having to close the file.
+
+    /* * * * * HX711 * * * * */
+    // Read from Channel A with Gain 128
+    // Can also try CHAN_A_GAIN_64 or CHAN_B_GAIN_32
+    int32_t weightB32 = hx711.readChannelBlocking(CHAN_B_GAIN_32);
+    Serial.print("Channel B (Gain 32): ");
+    Serial.println(weightB32);
+}
+
+/* * * * * Old Code * * * * */
+
 /* 
  * This program still largely uses the Arduino setup but it was put together in a PlatformIO environment.
  * Make sure you have all the libraries required to run this program listed below.
@@ -141,110 +300,4 @@ void loop() {
     // }
 }
 */
-
-// Feather9x_TX
-// -*- mode: C++ -*-
-// Example sketch showing how to create a simple messaging client (transmitter)
-// with the RH_RF95 class. RH_RF95 class does not provide for addressing or
-// reliability, so you should only use RH_RF95 if you do not need the higher
-// level messaging abilities.
-// It is designed to work with the other example Feather9x_RX
-
-#include "Arduino.h"
-#include <Adafruit_BME680.h>
-#include <Adafruit_I2CDevice.h>
-#include <Adafruit_Sensor.h>
-#include "Wire.h"
-#include <SPI.h>
-#include <RH_RF95.h>
-
-// Custom pinout for teensy 4.1
-#define RFM95_CS     10  // "B"
-#define RFM95_INT    0 // "C"
-#define RFM95_RST    1  // "A"
-#define RFM95_IRQN   RFM69_INT
-
-// Change to 434.0 or other frequency, must match RX's freq!
-// #define RF95_FREQ 915.0
-#define RF95_FREQ 915.0
-
-// Singleton instance of the radio driver
-RH_RF95 rf95(RFM95_CS, RFM95_INT);
-
-void setup() {
-  pinMode(RFM95_RST, OUTPUT);
-  digitalWrite(RFM95_RST, HIGH);
-
-  Serial.begin(9600);
-  while (!Serial) delay(1);
-  delay(100);
-
-  Serial.println("Feather LoRa TX Test!");
-
-  // manual reset
-  digitalWrite(RFM95_RST, LOW);
-  delay(10);
-  digitalWrite(RFM95_RST, HIGH);
-  delay(10);
-
-  while (!rf95.init()) {
-    Serial.println("LoRa radio init failed");
-    Serial.println("Uncomment '#define SERIAL_DEBUG' in RH_RF95.cpp for detailed debug info");
-    while (1);
-  }
-  Serial.println("LoRa radio init OK!");
-
-  // Defaults after init are 434.0MHz, modulation GFSK_Rb250Fd250, +13dbM
-  if (!rf95.setFrequency(RF95_FREQ)) {
-    Serial.println("setFrequency failed");
-    while (1);
-  }
-  Serial.print("Set Freq to: "); Serial.println(RF95_FREQ);
-
-  // Defaults after init are 434.0MHz, 13dBm, Bw = 125 kHz, Cr = 4/5, Sf = 128chips/symbol, CRC on
-
-  // The default transmitter power is 13dBm, using PA_BOOST.
-  // If you are using RFM95/96/97/98 modules which uses the PA_BOOST transmitter pin, then
-  // you can set transmitter powers from 5 to 23 dBm:
-  rf95.setTxPower(23, false);
-}
-
-int16_t packetnum = 0;  // packet counter, we increment per xmission
-
-void loop() {
-  delay(1000); // Wait 1 second between transmits, could also 'sleep' here!
-  Serial.println("Transmitting..."); // Send a message to rf95_server
-
-  char radiopacket[20] = "Hello World #      ";
-  itoa(packetnum++, radiopacket+13, 10);
-  Serial.print("Sending "); Serial.println(radiopacket);
-  radiopacket[19] = 0;
-
-  Serial.println("Sending...");
-  delay(10);
-  rf95.send((uint8_t *)radiopacket, 20);
-
-  Serial.println("Waiting for packet to complete...");
-  delay(10);
-  rf95.waitPacketSent();
-  // Now wait for a reply
-  uint8_t buf[RH_RF95_MAX_MESSAGE_LEN];
-  uint8_t len = sizeof(buf);
-
-  Serial.println("Waiting for reply...");
-  if (rf95.waitAvailableTimeout(1000)) {
-    // Should be a reply message for us now
-    if (rf95.recv(buf, &len)) {
-      Serial.print("Got reply: ");
-      Serial.println((char*)buf);
-      Serial.print("RSSI: ");
-      Serial.println(rf95.lastRssi(), DEC);
-    } else {
-      Serial.println("Receive failed");
-    }
-  } else {
-    Serial.println("No reply, is there a listener around?");
-  }
-
-}
 
