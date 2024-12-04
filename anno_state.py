@@ -14,8 +14,8 @@ app.layout = html.Div([
 
 @callback(Output('output-state', 'children'),
               Input('submit-button-state', 'n_clicks'),
-              State('input-1-state', 'value'),
-              State('input-2-state', 'value'))
+              State('input-1-state', 'value'),  # this means the input will only be read when callback fired
+              State('input-2-state', 'value'))  # with updating input "n-clicks" of submit-button-state"
 def update_output(n_clicks, input1, input2):
     return f'''
         The Button has been pressed {n_clicks} times,
